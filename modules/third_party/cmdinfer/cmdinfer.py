@@ -33,6 +33,12 @@ def find_estimator_class():
 def main(ifd = sys.stdin, ofd = sys.stdout):
     estimator_class = find_estimator_class()
     estimator = estimator_class()
+    with open("/app/receiver_pyinfer.json", 'r') as f:
+        config_str = f.read()
+        min_val = 5
+        if "1920" in config_str:
+            min_val = 450e3
+        
     while True:
         line = ifd.readline()
         if not line:
@@ -46,6 +52,7 @@ def main(ifd = sys.stdin, ofd = sys.stdout):
         request = request_estimated_bandwidth(line)
         if request:
             bandwidth = estimator.get_estimated_bandwidth()
+            bandwidth = max(int(bandwidth), min_val)
             ofd.write("{}\n".format(int(bandwidth)).encode("utf-8"))
             ofd.flush()
             continue
